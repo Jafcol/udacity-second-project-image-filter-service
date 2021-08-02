@@ -13,9 +13,6 @@ export async function filterImageFromURL(inputURL: string): Promise<string>{
         const photo = await Jimp.read(inputURL).catch(() => {reject("invalid image url");});
         const outpath = '/tmp/filtered.'+Math.floor(Math.random() * 2000)+'.jpg';
         let filteredpath = __dirname+outpath;
-        if (fs.existsSync(filteredpath)) {
-            filteredpath += '1';
-        }
         try {
         await photo
         .resize(256, 256) // resize
