@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
+import fs from 'fs';
 
 (async () => {
-  var files = [];
   // Init the Express application
   const app = express();
 
@@ -15,37 +15,24 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
-  // endpoint to filter an image from a public url.
-  // IT SHOULD
-  //    1
-  //    1. validate the image_url query
-  //    2. call filterImageFromURL(image_url) to filter the image
-  //    3. send the resulting file in the response
-  //    4. deletes any files on the server on finish of the response
-  // QUERY PARAMATERS
-  //    image_url: URL of a publicly accessible image
-  // RETURNS
-  //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
-
-  /**************************************************************************** */
-
-  //! END @TODO1
 
 app.get( "/filteredimage/", async ( req: Request, res: Response ) => {
-
+//validate the image_url query
     if ( !req.query.image_url ) {
       return res.status(400)
                 .send(`image url is required`);
     }
-    try {new URL(req.query.image_url);}
-    catch() {return res.status(422).send("invalid image url");}
- let image_url: URL = new URL(req.query.image_url);
- const filteredpath = await filterImageFromURL(req.query.image_url).catch((error) => {return res.status(422).send(error);});
-  if (!fs.existsSync(filteredpath)) {return res.status(404).send("image url not found. please try again");}
+//check if url is valid
+ let param = req.query.image_url.toString();
+ try {new URL(param);}
+ catch(error) {return res.status(422).send("invalid image url");}
+//filter the image
+ try {var filteredpath = await filterImageFromURL(param);} catch(error) {return res.status(422).send(error);}
+ let stringPath = filteredpath.toString();
+ //check if the file exists before sending it and delete it when the response is sent
+  if (!fs.existsSync(stringPath)) {return res.status(404).send("image url not found. please try again");}
     res.status(200)
-              .sendFile(filteredpath);
-              files = files.push(filteredpath);
-    deleteLocalFiles(files);
+       .sendFile(stringPath, () => {deleteLocalFiles([stringPath])});
   } );
   
   // Root Endpoint
