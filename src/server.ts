@@ -40,7 +40,8 @@ app.get( "/filteredimage/", async ( req: Request, res: Response ) => {
     try {new URL(req.query.image_url);}
     catch() {return res.status(422).send("invalid image url");}
  let image_url: URL = new URL(req.query.image_url);
- const filteredpath = await filterImageFromURL(req.query.image_url).catch((error) => {return res.status(422).send(error);}); 
+ const filteredpath = await filterImageFromURL(req.query.image_url).catch((error) => {return res.status(422).send(error);});
+  if (!fs.existsSync(filteredpath)) {return res.status(404).send("image url not found. please try again");}
     res.status(200)
               .sendFile(filteredpath);
               files = files.push(filteredpath);
